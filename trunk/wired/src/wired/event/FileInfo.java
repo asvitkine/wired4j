@@ -25,7 +25,9 @@
 
 package wired.event;
 
-public class FileInfo {
+import java.io.Serializable;
+
+public class FileInfo implements Serializable  {
 	public static final int TYPE_FILE = 0;
 	public static final int TYPE_FOLDER = 1;
 	public static final int TYPE_UPLOADS_FOLDER = 2;
