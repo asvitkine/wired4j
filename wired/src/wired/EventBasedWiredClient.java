@@ -216,11 +216,9 @@ public class EventBasedWiredClient extends WiredClient {
 	}
 
 	private static long parseDate(String dateString) {
-		System.out.println(dateString);
-		System.out.println(ISO8601.parse(dateString).toString());
 		return ISO8601.parse(dateString).getTimeInMillis();
 	}
-	
+
 	private static void readBaseUserFields(User user, int index, List<String> params) {
 		user.setId(Long.valueOf(params.get(index++)));
 		user.setIdle(Long.valueOf(params.get(index++)) == 1);
@@ -229,7 +227,7 @@ public class EventBasedWiredClient extends WiredClient {
 		user.setNick(params.get(index++));
 		user.setLogin(params.get(index++));
 	}
-	
+
 	private static User readUser(List<String> params) {
 		User user = new User();
 		readBaseUserFields(user, 1, params);
