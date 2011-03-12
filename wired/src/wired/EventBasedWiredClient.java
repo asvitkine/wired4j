@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 
+import wired.event.BroadcastEvent;
 import wired.event.ChatCreatedEvent;
 import wired.event.ChatEvent;
 import wired.event.DeclineChatEvent;
@@ -77,6 +78,11 @@ public class EventBasedWiredClient extends WiredClient {
 			event.setUserId(Long.valueOf(params.get(1)));
 			event.setMessage(params.get(2));
 			event.setEmote(code == WiredClient.MSG_ACTION_CHAT);
+			handler.handleEvent(event);
+		} else if (code == MSG_BROADCAST) {
+			BroadcastEvent event = new BroadcastEvent();
+			event.setUserId(Long.valueOf(params.get(0)));
+			event.setMessage(params.get(1));
 			handler.handleEvent(event);
 		} else if (code == MSG_USERLIST) {
 			long chatId = Long.valueOf(params.get(0));
