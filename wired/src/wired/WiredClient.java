@@ -30,6 +30,8 @@ import static wired.WiredUtils.*;
 import java.io.*;
 import java.util.*;
 
+import wired.event.AccountPrivileges;
+
 public abstract class WiredClient extends WiredClientBase {	
 	public static final int MSG_SERVER_INFO = 200;
 	public static final int MSG_LOGIN_SUCCESS = 201;
@@ -165,11 +167,11 @@ public abstract class WiredClient extends WiredClientBase {
 		send("COMMENT").send(SP).send(path).send(FS).send(comment).send(EOT);
 	}
 
-	public synchronized void createUser(String name, String password, String group, Priveleges privileges) throws IOException {
+	public synchronized void createUser(String name, String password, String group, AccountPrivileges privileges) throws IOException {
 		send("CREATEUSER").send(SP).send(name).send(FS).send(SHA1(password)).send(FS).send(group).send(privileges).send(EOT);
 	}
 
-	public synchronized void createGroup(String name, Priveleges privileges) throws IOException {
+	public synchronized void createGroup(String name, AccountPrivileges privileges) throws IOException {
 		send("CREATEGROUP").send(SP).send(name).send(FS).send(privileges).send(EOT);
 	}
 
@@ -189,11 +191,11 @@ public abstract class WiredClient extends WiredClientBase {
 		send("DELETEGROUP").send(SP).send(name).send(EOT);
 	}
 
-	public synchronized void editUser(String name, String password, String group, Priveleges privileges) throws IOException {
+	public synchronized void editUser(String name, String password, String group, AccountPrivileges privileges) throws IOException {
 		send("EDITUSER").send(SP).send(name).send(FS).send(SHA1(password)).send(FS).send(group).send(privileges).send(EOT);
 	}
 
-	public synchronized void editGroup(String name, Priveleges privileges) throws IOException {
+	public synchronized void editGroup(String name, AccountPrivileges privileges) throws IOException {
 		send("EDITGROUP").send(SP).send(name).send(FS).send(privileges).send(EOT);
 	}
 
@@ -353,7 +355,7 @@ public abstract class WiredClient extends WiredClientBase {
 		return (WiredClient) super.send(b);
 	}
 	
-	protected WiredClientBase send(Priveleges p) throws IOException {
+	protected WiredClientBase send(AccountPrivileges p) throws IOException {
 		return
 			send(p.getCanGetUserInfo()).send(FS).send(p.getCanBroadcast()).send(FS).
 			send(p.getCanPostNews()).send(FS).send(p.getCanClearNews()).send(FS).
@@ -369,6 +371,40 @@ public abstract class WiredClient extends WiredClientBase {
 			send(p.getCanChangeTopic());
 	}
 
+	private boolean parseBoolean(String param) {
+		return "1".equals(param);
+	}
+	
+	protected AccountPrivileges parsePrivileges(List<String> params, int index) {
+		AccountPrivileges privs = new AccountPrivileges();
+		privs.setCanGetUserInfo(parseBoolean(params.get(index++)));
+		privs.setCanBroadcast(parseBoolean(params.get(index++)));
+		privs.setCanPostNews(parseBoolean(params.get(index++)));
+		privs.setCanClearNews(parseBoolean(params.get(index++)));
+		privs.setCanDownload(parseBoolean(params.get(index++)));
+		privs.setCanUpload(parseBoolean(params.get(index++)));
+		privs.setCanUploadAnywhere(parseBoolean(params.get(index++)));
+		privs.setCanCreateFolders(parseBoolean(params.get(index++)));
+		privs.setCanAlterFiles(parseBoolean(params.get(index++)));
+		privs.setCanDeleteFiles(parseBoolean(params.get(index++)));
+		privs.setCanViewDropBoxes(parseBoolean(params.get(index++)));
+		privs.setCanCreateAccounts(parseBoolean(params.get(index++)));
+		privs.setCanEditAccounts(parseBoolean(params.get(index++)));
+		privs.setCanDeleteAccounts(parseBoolean(params.get(index++)));
+		privs.setCanElevatePrivileges(parseBoolean(params.get(index++)));
+		privs.setCanKickUsers(parseBoolean(params.get(index++)));
+		privs.setCanBanUsers(parseBoolean(params.get(index++)));
+		privs.setCanNotBeKicked(parseBoolean(params.get(index++)));
+		privs.setDownloadSpeed(Integer.parseInt(params.get(index++)));
+		privs.setUploadSpeed(Integer.parseInt(params.get(index++)));
+		if (index < params.size()) { // Wired 1.1
+			privs.setDownloadLimit(Integer.parseInt(params.get(index++)));
+			privs.setUploadLimit(Integer.parseInt(params.get(index++)));
+			privs.setCanChangeTopic(parseBoolean(params.get(index++)));
+		}
+		return privs;
+	}
+	
 	private static class ServerMessage {
 		int code;
 		ArrayList<String> params;
@@ -405,171 +441,5 @@ public abstract class WiredClient extends WiredClientBase {
 			}
 		}
 		return msg;
-	}
-
-	@SuppressWarnings("serial")
-	public static class Priveleges implements Serializable {
-		private boolean canGetUserInfo;
-		private boolean canBroadcast;
-		private boolean canPostNews;
-		private boolean canClearNews;
-		private boolean canDownload;
-		private boolean canUpload;
-		private boolean canUploadAnywhere;
-		private boolean canCreateFolders;
-		private boolean canAlterFiles;
-		private boolean canDeleteFiles;
-		private boolean canViewDropBoxes;
-		private boolean canCreateAccounts;
-		private boolean canEditAccounts;
-		private boolean canDeleteAccounts;
-		private boolean canElevatePrivileges;
-		private boolean canKickUsers;
-		private boolean canBanUsers;
-		private boolean canNotBeKicked;
-		private int downloadSpeed;
-		private int uploadSpeed;
-		private int downloadLimit;
-		private int uploadLimit;
-		private boolean canChangeTopic;
-
-		public boolean getCanGetUserInfo() {
-			return canGetUserInfo;
-		}
-		public void setCanGetUserInfo(boolean canGetUserInfo) {
-			this.canGetUserInfo = canGetUserInfo;
-		}
-		public boolean getCanBroadcast() {
-			return canBroadcast;
-		}
-		public void setCanBroadcast(boolean canBroadcast) {
-			this.canBroadcast = canBroadcast;
-		}
-		public boolean getCanPostNews() {
-			return canPostNews;
-		}
-		public void setCanPostNews(boolean canPostNews) {
-			this.canPostNews = canPostNews;
-		}
-		public boolean getCanClearNews() {
-			return canClearNews;
-		}
-		public void setCanClearNews(boolean canClearNews) {
-			this.canClearNews = canClearNews;
-		}
-		public boolean getCanDownload() {
-			return canDownload;
-		}
-		public void setCanDownload(boolean canDownload) {
-			this.canDownload = canDownload;
-		}
-		public boolean getCanUpload() {
-			return canUpload;
-		}
-		public void setCanUpload(boolean canUpload) {
-			this.canUpload = canUpload;
-		}
-		public boolean getCanUploadAnywhere() {
-			return canUploadAnywhere;
-		}
-		public void setCanUploadAnywhere(boolean canUploadAnywhere) {
-			this.canUploadAnywhere = canUploadAnywhere;
-		}
-		public boolean getCanCreateFolders() {
-			return canCreateFolders;
-		}
-		public void setCanCreateFolders(boolean canCreateFolders) {
-			this.canCreateFolders = canCreateFolders;
-		}
-		public boolean getCanAlterFiles() {
-			return canAlterFiles;
-		}
-		public void setCanAlterFiles(boolean canAlterFiles) {
-			this.canAlterFiles = canAlterFiles;
-		}
-		public boolean getCanDeleteFiles() {
-			return canDeleteFiles;
-		}
-		public void setCanDeleteFiles(boolean canDeleteFiles) {
-			this.canDeleteFiles = canDeleteFiles;
-		}
-		public boolean getCanViewDropBoxes() {
-			return canViewDropBoxes;
-		}
-		public void setCanViewDropBoxes(boolean canViewDropBoxes) {
-			this.canViewDropBoxes = canViewDropBoxes;
-		}
-		public boolean getCanCreateAccounts() {
-			return canCreateAccounts;
-		}
-		public void setCanCreateAccounts(boolean canCreateAccounts) {
-			this.canCreateAccounts = canCreateAccounts;
-		}
-		public boolean getCanEditAccounts() {
-			return canEditAccounts;
-		}
-		public void setCanEditAccounts(boolean canEditAccounts) {
-			this.canEditAccounts = canEditAccounts;
-		}
-		public boolean getCanDeleteAccounts() {
-			return canDeleteAccounts;
-		}
-		public void setCanDeleteAccounts(boolean canDeleteAccounts) {
-			this.canDeleteAccounts = canDeleteAccounts;
-		}
-		public boolean getCanElevatePrivileges() {
-			return canElevatePrivileges;
-		}
-		public void setCanElevatePrivileges(boolean canElevatePrivileges) {
-			this.canElevatePrivileges = canElevatePrivileges;
-		}
-		public boolean getCanKickUsers() {
-			return canKickUsers;
-		}
-		public void setCanKickUsers(boolean canKickUsers) {
-			this.canKickUsers = canKickUsers;
-		}
-		public boolean getCanBanUsers() {
-			return canBanUsers;
-		}
-		public void setCanBanUsers(boolean canBanUsers) {
-			this.canBanUsers = canBanUsers;
-		}
-		public boolean getCanNotBeKicked() {
-			return canNotBeKicked;
-		}
-		public void setCanNotBeKicked(boolean canNotBeKicked) {
-			this.canNotBeKicked = canNotBeKicked;
-		}
-		public int getDownloadSpeed() {
-			return downloadSpeed;
-		}
-		public void setDownloadSpeed(int downloadSpeed) {
-			this.downloadSpeed = downloadSpeed;
-		}
-		public int getUploadSpeed() {
-			return uploadSpeed;
-		}
-		public void setUploadSpeed(int uploadSpeed) {
-			this.uploadSpeed = uploadSpeed;
-		}
-		public int getDownloadLimit() {
-			return downloadLimit;
-		}
-		public void setDownloadLimit(int downloadLimit) {
-			this.downloadLimit = downloadLimit;
-		}
-		public int getUploadLimit() {
-			return uploadLimit;
-		}
-		public void setUploadLimit(int uploadLimit) {
-			this.uploadLimit = uploadLimit;
-		}
-		public boolean getCanChangeTopic() {
-			return canChangeTopic;
-		}
-		public void setCanChangeTopic(boolean canChangeTopic) {
-			this.canChangeTopic = canChangeTopic;
-		}
 	}
 }
