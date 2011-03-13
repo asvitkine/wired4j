@@ -45,6 +45,7 @@ import wired.event.PrivateMessageEvent;
 import wired.event.TopicChangedEvent;
 import wired.event.TransferReadyEvent;
 import wired.event.User;
+import wired.event.UserAccountEvent;
 import wired.event.UserInfoEvent;
 import wired.event.UserJoinEvent;
 import wired.event.UserLeaveEvent;
@@ -192,6 +193,13 @@ public class EventBasedWiredClient extends WiredClient {
 			event.setPath(params.get(0));
 			event.setOffset(Long.valueOf(params.get(1)));
 			event.setHash(params.get(2));
+			handler.handleEvent(event);
+		} else if (code == MSG_USER_SPECIFICATION) {
+			UserAccountEvent event = new UserAccountEvent();
+			event.setName(params.get(0));
+			event.setPassword(params.get(1));
+			event.setGroup(params.get(2));
+			event.setPriveleges(parsePrivileges(params, 3));
 			handler.handleEvent(event);
 		} else if (code >= 500 && code < 600) {
 			WiredErrorEvent event = new WiredErrorEvent();

@@ -100,7 +100,7 @@ public class UserInfoEvent extends WiredEvent {
 		this.uploads = uploads;
 	}
 
-	private static class Transfer {
+	public static class Transfer {
 		private String path;
 		private int transferred;
 		private int size;
