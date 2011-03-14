@@ -192,7 +192,7 @@ public abstract class WiredClient extends WiredClientBase {
 	}
 
 	public synchronized void editUser(String name, String password, String group, AccountPrivileges privileges) throws IOException {
-		send("EDITUSER").send(SP).send(name).send(FS).send(SHA1(password)).send(FS).send(group).send(privileges).send(EOT);
+		send("EDITUSER").send(SP).send(name).send(FS).send(SHA1(password)).send(FS).send(group).send(FS).send(privileges).send(EOT);
 	}
 
 	public synchronized void editGroup(String name, AccountPrivileges privileges) throws IOException {
